@@ -88,7 +88,58 @@ PostgreSQL
     sudo systemctl enable postgresql
     ```
 
-## PostgreSQL に接続
+## 設定
+
+### PostgreSQL 外部ホスト接続設定
+
+- /etc/postgresql/14/main/postgresql.conf
+
+    ```diff
+    --- ./postgresql.conf   2024-12-29 17:21:28.504696740 +0900
+    +++ /etc/postgresql/14/main/postgresql.conf     2024-12-29 17:22:06.655694344 +0900
+    @@ -57,7 +57,7 @@
+    
+     # - Connection Settings -
+    
+    -#listen_addresses = 'localhost'                # what IP address(es) to listen on;
+    +listen_addresses = '*'         # what IP address(es) to listen on;
+                                            # comma-separated list of addresses;
+                                            # defaults to 'localhost'; use '*' for all
+                                            # (change requires restart)
+    ```
+
+- pg_hba.conf
+
+    ```diff
+    --- /etc/postgresql/14/main/pg_hba.conf 2024-12-29 17:32:12.750079113 +0900
+    +++ ./pg_hba.conf       2024-12-29 17:31:48.835118567 +0900
+    @@ -95,7 +95,6 @@
+     local   all             all                                     peer
+     # IPv4 local connections:
+     host    all             all             127.0.0.1/32            scram-sha-256
+    -host    all             all             0.0.0.0/0               scram-sha-256
+     # IPv6 local connections:
+     host    all             all             ::1/128                 scram-sha-256
+     # Allow replication connections from localhost, by a user with the
+    ```
+
+- PostgreSQL サーバ再起動
+
+    ```bash
+    sudo systemctl restart postgresql
+    ```
+
+- 接続テスト用アカウント・DB 作成
+
+    ```bash
+    su - postgres
+    psql -c "CREATE ROLE testuser WITH SUPERUSER LOGIN PASSWORD 'testpassword';"
+    PGPASSWORD="testpassword" createdb -h localhost -U testuser -l C -T template0 -E utf8 testdb
+    ```
+
+## psql コマンド
+
+### PostgreSQL に接続
 
 - 管理ユーザ (postgres)
 
@@ -97,7 +148,7 @@ PostgreSQL
     ```
 
 
-## psql コマンド操作
+### psql コマンド操作
 
 - ユーザ関連
 
