@@ -60,3 +60,9 @@ ClamAV
                 --move="/var/clanmav/virus" \
                 --log="/var/clanmav/history/$(date +%Y%m%d-%H%M%S).log" /home
             ```
+
+- GUI ツール
+
+    ```bash
+    sudo apt install clamtk
+    ```
