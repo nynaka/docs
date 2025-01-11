@@ -100,6 +100,12 @@ Xubuntu Linux 22.04
 
     - [Microsoft Edge](https://www.microsoft.com/ja-jp/edge?form=MA13FJ)
 
+        ```bash
+        wget https://packages.microsoft.com/repos/edge/pool/main/m/microsoft-edge-stable/microsoft-edge-stable_130.0.2849.56-1_amd64.deb?brand=M102 \
+            -O /tmp/microsoft-edge-stable_130.0.2849.56-1_amd64.deb
+        sudo dpkg -i /tmp/microsoft-edge-stable_130.0.2849.56-1_amd64.deb
+        ```
+
     - [Eclipse](https://www.eclipse.org/)
 
         eclipse-java-2024-09-R-linux-gtk-x86_64.tar.gz の例  
@@ -387,15 +393,7 @@ Xubuntu Linux 22.04
     ```
 
 
-## 仮想化環境
-
-### 仮想環境をホストする場合
-
-VirtualBox、VMware Workstation の利用を予定している場合は、UEFI を無効にした方が設定が楽です。  
-UEFI を有効にしていると、それぞれの仮想環境用のカーネルドライバをロードするとき、カーネルドライバへの署名が必須らしく、作業が面倒い。
-
-
-### 仮想環境にインストールする場合
+## 仮想化環境用ツール
 
 - VMware tools
 
