@@ -88,6 +88,69 @@ PostgreSQL
     sudo systemctl enable postgresql
     ```
 
+- ソースからインストール
+
+    - ビルドツールのインストール
+
+        **configure** スクリプトがエラー終了しなくなるまで依存関係にあるビルドツールやライブラリをインストールしてください。
+
+        - Debian Linux / Ubuntu Linux
+
+            ```bash
+            sudo apt install -y bison flex libicu-dev libreadline-dev libssl-dev
+            ```
+
+    - ソースの取得
+
+        [Github](https://github.com/postgres/postgres) でも公開されていますが、ここでは [PostgreSQL: File Browser](https://www.postgresql.org/ftp/source/) から tar ファイルを取得するものとします。
+
+        ```bash
+        wget https://ftp.postgresql.org/pub/source/v17.2/postgresql-17.2.tar.bz2
+        ```
+
+    - ソースのビルド
+
+        ```bash
+        tar jxvf postgresql-17.2.tar.bz2
+        cd postgresql-17.2
+        ./configure --prefix=/usr/local/pgsql --with-openssl
+        make
+        sudo make install
+        ```
+
+    - **postgres** ユーザ作成
+
+        ```bash
+        sudo useradd -d /var/lib/postgres -m -s /bin/bash  postgres
+        ```
+
+    - DB の初期化
+
+        ```bash
+        sudo -i -u postgres
+        /usr/local/pgsql/bin/initdb -D /var/lib/postgres/data
+        ```
+
+    - PostgreSQL サーバの起動
+
+        ```bash
+        /usr/local/pgsql/bin/pg_ctl -D /var/lib/postgres/data -l logfile start
+        ```
+
+    - PostgreSQL に接続
+
+        ```bash
+        /usr/local/pgsql/bin/psql -U postgres
+        ```
+
+    - 環境変数設定
+
+        ```bash
+        echo 'export PATH=/usr/local/pgsql/bin:$PATH' >> $HOME/.bashrc
+        source $HOME/.bashrc
+        ```
+
+
 ## 設定
 
 ### PostgreSQL 外部ホスト接続設定
@@ -214,7 +277,7 @@ PostgreSQL
 
     ```sql
     CREATE USER test WITH PASSWORD 'passwd';
-    CREATE DATABASE testdb;
+    CREATE DATABASE testdb OWNER test;
     GRANT all ON DATABASE testdb TO test;
     \q
     ```
@@ -250,10 +313,107 @@ PostgreSQL
     SELECT * FROM test;
     ```
 
+### Go
+
+- サンプルコード
+
+    ```bash
+    package main
+
+    import (
+            "database/sql"
+            "fmt"
+            "log"
+
+            _ "github.com/lib/pq" // PostgreSQLドライバをインポート（空の識別子が必要）
+    )
+
+    func main() {
+        // PostgreSQL接続情報
+        connStr := "user=test password=passwd dbname=testdb sslmode=disable"
+
+        // データベース接続
+        db, err := sql.Open("postgres", connStr)
+        if err != nil {
+            log.Fatalf("データベース接続エラー: %v", err)
+        }
+        defer db.Close()
+
+        // 接続確認
+        err = db.Ping()
+        if err != nil {
+            log.Fatalf("データベースPingエラー: %v", err)
+        }
+        fmt.Println("PostgreSQLに接続しました！")
+
+        // データ挿入
+        _, err = db.Exec(`INSERT INTO test (col1, col2) VALUES ($1, $2)`, "Col1 Value", "Col2 Value")
+        if err != nil {
+                log.Fatalf("データ挿入エラー: %v", err)
+        }
+        fmt.Println("データを挿入しました！")
+
+        // データ取得
+        rows, err := db.Query(`SELECT * FROM test`)
+        if err != nil {
+            log.Fatalf("データ取得エラー: %v", err)
+        }
+        defer rows.Close()
+
+        fmt.Println("データを取得しました：")
+        for rows.Next() {
+            var id int
+            var col1 string
+            var col2 string
+            err = rows.Scan(&id, &col1, &col2)
+            if err != nil {
+                log.Fatalf("データスキャンエラー: %v", err)
+            }
+            fmt.Printf("ID: %d, col1: %s, col2: %s\n", id, col1, col2)
+        }
+
+        // エラー確認
+        if err = rows.Err(); err != nil {
+            log.Fatalf("行エラー: %v", err)
+        }
+    }
+    ```
+
+- 実行方法
+
+    1. プロジェクトディレクトリの初期化
+
+        ```bash
+        go mod init go_postgres
+        ```
+
+    2. github.com/lib/pq の取得
+
+        ```bash
+        go get github.com/lib/pq
+        ```
+
+    3. プログラムの実行
+
+        - その 1
+        
+            ```bash
+            go run pg_sample.go
+            ```
+
+        - その 2
+
+            ```bash
+            go build pg_sample.go
+            ```
 
 ### Python
 
 - ライブラリのインストール
+
+    ```bash
+    sudo apt install -y libpq-dev
+    ```
 
     ```bash
     pip3 install SQLAlchemy psycopg2
