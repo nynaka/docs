@@ -61,3 +61,29 @@ Ubuntu Linux 24.04 の場合、`|/usr/share/apport/apport -p%p -s%s -c%c -d%d -P
         ```bash
         gdb ./crach /tmp/core.crash.848
         ```
+
+## Makefile
+
+```bash
+NAME = crash
+SRCS = crash.c
+OBJS = $(SRCS:.c=.o)
+CC = gcc
+CFLAGS = -g -Wall -Wextra -Werror
+
+$(NAME): $(OBJS)
+	$(CC) $(CFLAGS) -o $(NAME) $(OBJS)
+
+all: $(NAME)
+
+.c.o:
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	rm -f $(OBJS) $(NAME)
+
+fclean: clean
+	rm -f $(NAME)
+
+re: fclean al
+```
