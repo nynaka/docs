@@ -393,7 +393,7 @@ PostgreSQL
         go get github.com/lib/pq
         ```
 
-    3. プログラムの実行
+    3. サンプルコードの実行
 
         - その 1
         
@@ -461,7 +461,83 @@ PostgreSQL
     ```
 
 
-## 参考サイト
+### Rust
 
-- [PostgreSQL を Ubuntu に普通にインストール](https://qiita.com/nanbuwks/items/846cf3536a82a2798555)
-- [Ubuntu 20.04にPostgreSQLをインストールする方法 [クイックスタート]](https://www.digitalocean.com/community/tutorials/how-to-install-postgresql-on-ubuntu-20-04-quickstart-ja)
+- プロジェクトの作成
+
+    ```bash
+    cargo new rust_postgres
+    cd rust_postgres
+    ```
+
+- tokio-postgres の依存関係の追加
+
+    Cargo.toml
+
+    ```diff
+    --- Cargo.toml.origin   2025-01-13 08:52:01.703582760 +0900
+    +++ Cargo.toml  2025-01-13 08:52:26.033746605 +0900
+    @@ -6,3 +6,5 @@
+     # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+    
+     [dependencies]
+    +tokio = { version = "1", features = ["full"] }
+    +tokio-postgres = "0.7"
+    ```
+
+- サンプルコード
+
+    src/main.rs
+
+    ```rust
+    use tokio_postgres::{NoTls, Error};
+
+    #[tokio::main]
+    async fn main() -> Result<(), Error> {
+        // PostgreSQLの接続情報
+        let connection_string = "host=localhost user=test password=passwd dbname=testdb";
+
+        // クライアントと接続タスクを取得
+        let (client, connection) = tokio_postgres::connect(connection_string, NoTls).await?;
+
+        // 別スレッドで接続タスクを駆動
+        tokio::spawn(async move {
+            if let Err(e) = connection.await {
+                eprintln!("接続エラー: {}", e);
+            }
+        });
+
+        // データを挿入
+        client
+            .execute("INSERT INTO test (col1, col2) VALUES ($1, $2)", &[&"Col1 Value", &"Col2 Value"])
+            .await?;
+        println!("データを挿入しました！");
+
+        // データを取得
+        let rows = client.query("SELECT * FROM test", &[]).await?;
+        for row in rows {
+            let id: i32 = row.get(0);
+            let col1: &str = row.get(1);
+            let col2: &str = row.get(1);
+
+            println!("ID: {}, col1: {}, col2: {}", id, col1, col2);
+        }
+
+        Ok(())
+    }
+    ```
+
+- サンプルコードの実行
+
+    - その 1
+    
+        ```bash
+        cargo run
+        ```
+
+    - その 2
+
+        ```bash
+        cargo build --release
+        ./target/release/rust_postgres
+        ```
