@@ -14,8 +14,15 @@
 
 <hr>
 
+* Server
+** [PostgreSQL](./server/postgresql.md)
+** [Samba](./server/samba.md)
+
+<hr>
+
 * Linux / Unix Tool
 ** [Tripwire](./linux/tool/tripwire.md)
+** [ClamAV](./tips/clamav.md)
 
 <hr>
 
@@ -25,7 +32,6 @@
 <hr>
 
 * その他
-** [ClamAV](./tips/clamav.md)
 ** [GitLab](./VCS/gitlab/gitlab.md)
 ** [SSH 公開鍵認証設定](./tips/ssh_public_key_authentication.md)
 ** [Linux モニタリングツール](./tips/linux_monitoring.md)
