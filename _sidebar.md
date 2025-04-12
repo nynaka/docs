@@ -23,6 +23,7 @@
 * Linux / Unix Tool
 ** [Tripwire](./linux/tool/tripwire.md)
 ** [ClamAV](./tips/clamav.md)
+** [SoftHSM](./tips/softhsm.md)
 
 <hr>
 
